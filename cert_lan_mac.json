@@ -1,0 +1,17 @@
+{
+  "body": {
+    "version": 0,
+    "issued_at": 1794335161,
+    "anchor": "Tashkent-Mac-1 (LAN)",
+    "prover_pubkey": "bU54DX+hLwa/9sEwT/PsZtInfrhw2MC3sP5cjfFs3SA=",
+    "gpu_uuid": "no-gpu",
+    "rounds": 100,
+    "min_rtt_ms": 3.672,
+    "median_rtt_ms": 5.37,
+    "max_distance_km": 367.2,
+    "claim": "prover answered a fresh signed challenge within 3.672 ms, so it is at most 367 km (network-path distance bound) from anchor 'Tashkent-Mac-1 (LAN)'.",
+    "limits": "does not establish jurisdiction; upper bound from one anchor; prover key is a copyable software key (attestation: none), so a local relay holding a copied key is not detected"
+  },
+  "verifier_pubkey": "MgwCj8vRh4dcCiqBJRmxutSSKwkYW94SmoA931byzvw=",
+  "sig": "EOEB5XJ9abV1y26VvW5rLfQgsMOQSMG7E6ioOdVvqDF3EzDZv73+swpcgvf+HES9C5tMcYiThFFsBmi+3RgSCw=="
+}
