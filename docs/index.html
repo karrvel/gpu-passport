@@ -1,0 +1,227 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>GPU Passport</title>
+<meta name="description" content="Proof of where an AI chip is. Timed, signed challenges bound how far a GPU can be from a trusted anchor.">
+<style>
+:root { --bg:#fbfbfd; --ink:#1d1d1f; --mute:#6e6e73; --line:#e5e5ea; --card:#ffffff; --accent:#7c3aed; --dot:#c7c7cc }
+@media (prefers-color-scheme: dark) {
+  :root { --bg:#000000; --ink:#f5f5f7; --mute:#a1a1a6; --line:#2c2c2e; --card:#111113; --accent:#7c3aed; --dot:#555558 }
+}
+* { box-sizing:border-box; margin:0; padding:0 }
+html { -webkit-text-size-adjust:100% }
+body { font-family:-apple-system,BlinkMacSystemFont,"SF Pro Display","SF Pro Text","Helvetica Neue",Arial,sans-serif; background:var(--bg); color:var(--ink); -webkit-font-smoothing:antialiased; line-height:1.5; overflow-x:hidden }
+.wrap { max-width:1080px; margin:0 auto; padding:0 16px }
+nav { display:flex; justify-content:space-between; align-items:center; padding:18px 0; font-size:14px }
+nav b { font-weight:600; letter-spacing:-.01em }
+nav a { color:var(--mute); text-decoration:none }
+nav a:hover { color:var(--accent) }
+.hero { text-align:center; padding:56px 0 0 }
+.eyebrow { color:var(--accent); font-weight:600; font-size:17px; letter-spacing:-.01em }
+h1 { font-size:clamp(44px,8vw,96px); line-height:1.02; letter-spacing:-.045em; font-weight:700; margin-top:10px }
+.lead { font-size:clamp(19px,2.4vw,24px); color:var(--mute); max-width:720px; margin:20px auto 0; letter-spacing:-.01em }
+#globe { position:relative; width:100%; max-width:760px; aspect-ratio:1/1; margin:24px auto 0 }
+#globe canvas { width:100% !important; height:100% !important; display:block }
+#tip { position:absolute; pointer-events:none; background:var(--card); color:var(--ink); border:1px solid var(--line); border-radius:10px; padding:6px 10px; font-size:13px; white-space:nowrap; opacity:0; transition:opacity .15s; transform:translate(-50%,-130%) }
+.legend { list-style:none; display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:10px; max-width:900px; margin:8px auto 0; text-align:left }
+.legend li { border:1px solid var(--line); border-radius:14px; padding:12px 14px; font-size:14px; color:var(--mute); cursor:default; transition:border-color .15s }
+.legend li b { display:block; color:var(--ink); font-weight:600; font-size:15px }
+.legend li span { color:var(--accent); font-weight:600; font-variant-numeric:tabular-nums }
+.legend li:hover, .legend li.on { border-color:var(--accent) }
+section { padding:120px 0 0 }
+h2 { font-size:clamp(34px,5.5vw,64px); line-height:1.05; letter-spacing:-.035em; font-weight:700; max-width:860px }
+h2.c { text-align:center; margin:0 auto }
+.sub { font-size:clamp(17px,2vw,21px); color:var(--mute); max-width:680px; margin-top:16px }
+.steps { display:grid; grid-template-columns:repeat(auto-fit,minmax(240px,1fr)); gap:16px; margin-top:44px }
+.card { background:var(--card); border:1px solid var(--line); border-radius:20px; padding:28px }
+.card .k { color:var(--accent); font-weight:600; font-size:15px }
+.card h3 { font-size:26px; letter-spacing:-.025em; margin-top:6px }
+.card p { color:var(--mute); margin-top:8px; font-size:16px }
+.big { font-size:clamp(40px,7vw,72px); font-weight:700; letter-spacing:-.04em; color:var(--accent); margin-top:48px; line-height:1 }
+.tbl { overflow-x:auto; margin-top:40px; -webkit-overflow-scrolling:touch }
+table { width:100%; border-collapse:collapse; font-size:16px; min-width:560px }
+th { text-align:left; font-weight:600; color:var(--mute); font-size:13px; padding:0 12px 12px 0; border-bottom:1px solid var(--line) }
+td { padding:16px 12px 16px 0; border-bottom:1px solid var(--line); vertical-align:top }
+td small { display:block; color:var(--mute); font-size:13px; margin-top:2px }
+.n { text-align:right; font-variant-numeric:tabular-nums; white-space:nowrap }
+td.b { font-weight:700; font-size:19px; letter-spacing:-.02em }
+code { font-family:ui-monospace,"SF Mono",Menlo,monospace; font-size:12px; color:var(--mute) }
+.note { color:var(--mute); font-size:15px; margin-top:16px; max-width:760px }
+.limits { display:grid; grid-template-columns:repeat(auto-fit,minmax(300px,1fr)); gap:16px; margin-top:44px }
+footer { padding:120px 0 48px; color:var(--mute); font-size:14px; text-align:center }
+footer a { color:var(--mute) }
+@media (max-width:600px) { section { padding-top:80px } .card { padding:22px } }
+</style>
+</head>
+<body>
+<div class="wrap">
+  <nav><b>GPU Passport</b><a href="https://github.com/karrvel/gpu-passport">GitHub</a></nav>
+
+  <header class="hero">
+    <div class="eyebrow">GPU Passport</div>
+    <h1>Proof of where an AI&nbsp;chip&nbsp;is.</h1>
+    <p class="lead">A signed answer can only travel so fast. We time it, and the speed of light puts a hard ceiling on how far away the GPU can be.</p>
+    <div id="globe" aria-label="Globe with arcs from Tashkent to each measured prover"><div id="tip"></div></div>
+    <ul class="legend" id="legend"></ul>
+  </header>
+
+  <section id="how">
+    <h2>Three steps. One law of physics.</h2>
+    <p class="sub">An anchor we trust sits in Tashkent. The GPU server runs a small agent. Every check takes a fraction of a second.</p>
+    <div class="steps">
+      <div class="card"><div class="k">1</div><h3>Challenge</h3><p>The anchor sends a fresh random number that nobody could have guessed in advance.</p></div>
+      <div class="card"><div class="k">2</div><h3>Sign</h3><p>The agent on the GPU server signs it with a key tied to that GPU and returns the signature.</p></div>
+      <div class="card"><div class="k">3</div><h3>Bound</h3><p>The round-trip time caps the distance. Light in fiber covers about 200 km per millisecond, so the reply could not have come from farther.</p></div>
+    </div>
+    <div class="big">1 ms ≈ at most 100 km</div>
+  </section>
+
+  <section id="results">
+    <h2>Measured from Tashkent.</h2>
+    <p class="sub">The anchor is a Mac in Tashkent. Each row is a real run against a real machine.</p>
+    <div class="tbl"><table>
+      <thead><tr><th>Prover</th><th class="n">Round trip</th><th class="n">Distance bound</th></tr></thead>
+      <tbody id="rows"></tbody>
+    </table></div>
+    <p class="note">These are upper bounds. Belgium is really about 4,800 km away; routing, tunnels and processing only add time, so the bound is loose but never wrong.</p>
+  </section>
+
+  <section id="limits">
+    <h2>Honest limits.</h2>
+    <div class="limits">
+      <div class="card"><h3>Upper bounds only</h3><p>Timing proves a chip is no farther than X. It cannot prove it is exactly here.</p></div>
+      <div class="card"><h3>Distance, not borders</h3><p>One checker proves distance, not a border. Shymkent, Kazakhstan is about 120 km from Tashkent. Several anchors in different cities narrow it to inside the country.</p></div>
+      <div class="card"><h3>Software keys can be copied</h3><p>Until the key is bound to hardware attestation, a copied key could answer from another machine. That is the next milestone.</p></div>
+      <div class="card"><h3>Hops only add distance</h3><p>Tunnels and relays can only make a host look farther, never closer. The relay test above was caught exactly that way.</p></div>
+    </div>
+  </section>
+
+  <section id="who">
+    <h2>Who it is for.</h2>
+    <div class="steps">
+      <div class="card"><div class="k">Operators</div><h3>GPU operators in Uzbekistan</h3><p>Evidence for licences, compliance and customers that their chips stay in the country.</p></div>
+      <div class="card"><div class="k">Tenants</div><h3>Sovereign tenants</h3><p>Banks and ministries that must show where their workloads physically ran.</p></div>
+      <div class="card"><div class="k">Marketplaces</div><h3>GPU marketplaces</h3><p>Sell country-pinned pools with per-job proof instead of a promise.</p></div>
+    </div>
+  </section>
+
+  <footer>Komiljon Kosimov · Tashkent · <a href="https://github.com/karrvel/gpu-passport">github.com/karrvel/gpu-passport</a></footer>
+</div>
+
+<script>
+// Data lives in a classic script so the table renders even if three.js or WebGL fails.
+window.PROVERS = [
+  { name:"GCP VM, Belgium", detail:"CPU only", lat:50.45, lon:3.82, ms:98.9, km:9886 },
+  { name:"Same Belgium VM via Tashkent relay", detail:"Relay exposed: the bound did not shrink", lat:50.45, lon:3.82, ms:100.3, km:10032, relay:true },
+  { name:"Modal T4 GPU, Ashburn US", detail:"Tunnel ingress", gpu:"GPU-1fb033de…", lat:39.04, lon:-77.49, ms:176.8, km:17681 },
+  { name:"Modal T4 GPU, San Jose US", detail:"Tunnel ingress", gpu:"GPU-d1c8c9dd…", lat:37.34, lon:-121.89, ms:248.8, km:24882 },
+  { name:"RTX 5070 PC, Tashkent", detail:"Same network", gpu:"GPU-e82d8615…", lat:41.31, lon:69.28, ms:3.19, km:319 },
+  { name:"Second MacBook, Tashkent", detail:"Same Wi-Fi", lat:41.31, lon:69.28, ms:3.67, km:367 }
+];
+const fmt = n => n.toLocaleString("en-US");
+document.getElementById("rows").innerHTML = PROVERS.map(p =>
+  `<tr><td>${p.name}<small>${p.detail}${p.gpu ? ` · <code>${p.gpu}</code>` : ""}</small></td><td class="n">${p.ms} ms</td><td class="n b">≤ ${fmt(p.km)} km</td></tr>`).join("");
+document.getElementById("legend").innerHTML = PROVERS.map((p, i) =>
+  `<li data-i="${i}"><b>${p.name}</b>${p.ms} ms · <span>≤ ${fmt(p.km)} km</span></li>`).join("");
+</script>
+
+<script type="module">
+const box = document.getElementById("globe");
+try {
+  const THREE = await import("https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js");
+  const css = n => getComputedStyle(document.documentElement).getPropertyValue(n).trim();
+  const renderer = new THREE.WebGLRenderer({ antialias:true, alpha:true });
+  renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+  box.prepend(renderer.domElement);
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(35, 1, 0.1, 100);
+  camera.position.z = 4.6;
+  const globe = new THREE.Group();
+  globe.rotation.x = 0.35;
+  scene.add(globe);
+
+  const R = 1;
+  const toV = (lat, lon, r = R) => {
+    const phi = (90 - lat) * Math.PI / 180, th = (lon + 180) * Math.PI / 180;
+    return new THREE.Vector3(-r * Math.sin(phi) * Math.cos(th), r * Math.cos(phi), r * Math.sin(phi) * Math.sin(th));
+  };
+
+  // Fibonacci-distributed dots: an even, minimal sphere.
+  const N = 2600, pos = new Float32Array(N * 3);
+  for (let i = 0; i < N; i++) {
+    const y = 1 - (i / (N - 1)) * 2, r = Math.sqrt(1 - y * y), t = i * Math.PI * (3 - Math.sqrt(5));
+    pos.set([Math.cos(t) * r * R, y * R, Math.sin(t) * r * R], i * 3);
+  }
+  const dg = new THREE.BufferGeometry();
+  dg.setAttribute("position", new THREE.BufferAttribute(pos, 3));
+  const dotMat = new THREE.PointsMaterial({ color:css("--dot"), size:0.012 });
+  globe.add(new THREE.Points(dg, dotMat));
+  // Occluder so back-side dots and arcs are hidden.
+  const occ = new THREE.Mesh(new THREE.SphereGeometry(R * 0.995, 48, 48), new THREE.MeshBasicMaterial({ color:css("--bg") }));
+  globe.add(occ);
+
+  const accent = new THREE.Color(css("--accent"));
+  const home = toV(41.31, 69.28);
+  const glow = new THREE.Mesh(new THREE.SphereGeometry(0.025, 16, 16), new THREE.MeshBasicMaterial({ color:accent }));
+  glow.position.copy(home); globe.add(glow);
+  const halo = new THREE.Mesh(new THREE.SphereGeometry(0.06, 16, 16), new THREE.MeshBasicMaterial({ color:accent, transparent:true, opacity:0.25 }));
+  halo.position.copy(home); globe.add(halo);
+
+  // One arc per distinct far location; local provers share the Tashkent point.
+  const arcs = [];
+  const seen = {};
+  PROVERS.forEach((p, i) => {
+    const key = p.lat + "," + p.lon;
+    if (p.km < 1000) { arcs.push({ i, obj:halo }); return; }
+    if (seen[key]) { arcs.push({ i, obj:seen[key] }); return; }
+    const a = home.clone().normalize(), b = toV(p.lat, p.lon).normalize();
+    const ang = a.angleTo(b), pts = [];
+    for (let k = 0; k <= 64; k++) {
+      const t = k / 64, s = Math.sin(ang);
+      const v = a.clone().multiplyScalar(Math.sin((1 - t) * ang) / s).add(b.clone().multiplyScalar(Math.sin(t * ang) / s));
+      pts.push(v.multiplyScalar(R + Math.sin(Math.PI * t) * ang * 0.12));
+    }
+    const line = new THREE.Line(new THREE.BufferGeometry().setFromPoints(pts), new THREE.LineBasicMaterial({ color:accent, transparent:true, opacity:0.55 }));
+    const end = new THREE.Mesh(new THREE.SphereGeometry(0.018, 12, 12), new THREE.MeshBasicMaterial({ color:accent }));
+    end.position.copy(toV(p.lat, p.lon));
+    line.add(end);
+    line.userData.mid = pts[32];
+    globe.add(line);
+    seen[key] = line;
+    arcs.push({ i, obj:line });
+  });
+
+  // Highlight an arc when its legend card is hovered, with a floating label.
+  const tip = document.getElementById("tip");
+  let active = null;
+  document.getElementById("legend").addEventListener("mouseover", e => {
+    const li = e.target.closest("li"); if (!li) return;
+    active = arcs.find(a => a.i === +li.dataset.i);
+    const p = PROVERS[active.i];
+    tip.textContent = `${p.name} · ≤ ${p.km.toLocaleString("en-US")} km`;
+    tip.style.opacity = 1;
+  });
+  document.getElementById("legend").addEventListener("mouseleave", () => { active = null; tip.style.opacity = 0; });
+
+  const resize = () => { const w = box.clientWidth; renderer.setSize(w, w, false); };
+  addEventListener("resize", resize); resize();
+  const still = matchMedia("(prefers-reduced-motion: reduce)").matches;
+  globe.rotation.y = -2.9; // start with Central Asia facing the viewer
+  renderer.setAnimationLoop(() => {
+    if (!still) globe.rotation.y += 0.0015;
+    halo.scale.setScalar(1 + 0.35 * Math.sin(performance.now() / 400));
+    arcs.forEach(a => { if (a.obj.material && a.obj !== halo) a.obj.material.opacity = active && active.obj === a.obj ? 1 : 0.55; });
+    if (active) {
+      const v = (active.obj.userData.mid || home).clone().applyMatrix4(globe.matrixWorld).project(camera);
+      tip.style.left = (v.x + 1) / 2 * 100 + "%"; tip.style.top = (1 - v.y) / 2 * 100 + "%";
+    }
+    renderer.render(scene, camera);
+  });
+} catch (e) {
+  box.style.display = "none"; // no WebGL or no CDN: results still render below
+}
+</script>
+</body>
+</html>

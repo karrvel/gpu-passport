@@ -1,5 +1,7 @@
 # GPU Passport v0
 
+Live page: https://karrvel.github.io/gpu-passport/
+
 Signed, delay-bounded location evidence for a GPU host. A verifier at an anchor sends fresh nonces over UDP;
 the prover (next to the GPU) signs `nonce || gpu_uuid` with an ed25519 key; the verifier takes the **minimum RTT
 over 100 rounds** and issues a signed certificate: the signer is at most `RTT/2 × 200 km/ms` from the anchor.
